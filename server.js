@@ -23,8 +23,9 @@ const app = express();
 
 // Middleware
 app.use(helmet()); // Secure HTTP headers
+
 app.use(cors({
-    origin: ['https://your-frontend-domain.com'], // Replace with your frontend domain
+    origin: ['https://ai-web-smoky.vercel.app'], // Replace with your frontend domain
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 }));
