@@ -6,6 +6,13 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
+
+
+// Protected route to get user details
+router.get('/user', authenticateToken, authController.getUserDetails);
+
+
+
 /**
  * @route   POST /api/auth/register
  * @desc    Register a new user
