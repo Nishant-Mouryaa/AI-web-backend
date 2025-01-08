@@ -5,6 +5,9 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const authenticateToken = require('../middleware/authenticateToken'); // Middleware to verify JWT
+const authController = require('../controllers/authController'); // Controller handling the logic
+
 
 
 
