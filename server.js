@@ -12,6 +12,8 @@ const morgan = require('morgan');
 // Load environment variables
 dotenv.config();
 
+console.log('OpenAI API Key:', process.env.OPENAI_API_KEY ? 'Loaded' : 'Missing');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile'); // Import the profile route

@@ -5,6 +5,13 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const authenticateJWT = require('../middleware/auth');
 const Template = require('../models/Template');
+const authenticateToken = require('../middleware/authenticateToken');
+const templatesController = require('../controllers/templatesController'); // Import the controller
+
+
+// Route: POST /api/templates/suggestions
+router.post('/suggestions', authenticateToken, templatesController.getTemplateSuggestions);
+
 
 /**
  * @route   POST /api/templates
