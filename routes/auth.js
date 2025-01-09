@@ -14,7 +14,11 @@ const authController = require('../controllers/authController'); // Controller h
 // Protected route to get user details
 router.get('/user', authenticateToken, authController.getUserDetails);
 
+// Route to update website preferences
+router.put('/user/preferences', authenticateToken, authController.updateWebsitePreferences);
 
+// Route to update user description
+router.put('/user/description', authenticateToken, authController.updateUserDescription);
 
 /**
  * @route   POST /api/auth/register
