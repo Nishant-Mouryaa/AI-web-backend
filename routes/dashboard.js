@@ -35,7 +35,6 @@ router.get('/metrics', authenticateJWT, async (req, res) => {
     }
 });
 
-
 /**
  * @route   GET /api/dashboard/subscriptions
  * @desc    Get active subscriptions over time
@@ -134,3 +133,6 @@ router.get('/revenue-source', authenticateJWT, async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
+
+// **Add this line to export the router**
+module.exports = router;
