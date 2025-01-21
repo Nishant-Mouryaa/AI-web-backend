@@ -35,12 +35,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(helmet()); // Secure HTTP headers
-
+// CORS Configuration
 app.use(cors({
-    origin: ['https://ai-web-smoky.vercel.app'], // Replace with your frontend domain
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-}));
+    origin: 'https://ai-web-smoky.vercel.app', // Frontend's URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+    credentials: true, // If you need to send cookies or authentication headers
+  }));
 app.use(morgan('combined')); // Logging
 app.use(express.json()); // Parse JSON payloads
 app.use(mongoSanitize()); // Prevent NoSQL injection
