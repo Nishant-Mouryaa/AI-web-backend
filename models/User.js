@@ -34,6 +34,24 @@ const UserSchema = new mongoose.Schema(
                 enum: ['single-column', 'multi-column'],
                 default: 'single-column',
             },
+
+            avatar: {
+                type: String, // URL or path to the avatar image
+                default: '/uploads/avatars/default-avatar.png', // Default avatar path
+              },
+
+              name: {
+                type: String,
+                required: true,
+                default: 'John Doe',
+                trim: true,
+              },
+              createdAt: {
+                type: Date,
+                default: Date.now,
+              },
+
+
             // Add more preferences as needed
         },
     },

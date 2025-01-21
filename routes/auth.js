@@ -7,7 +7,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const authenticateToken = require('../middleware/authenticateToken'); // Middleware to verify JWT
 const authController = require('../controllers/authController'); // Controller handling the logic
-
+const multer = require('multer');
 
 
 
@@ -154,5 +154,115 @@ router.post(
         }
     }
 );
+
+
+// Configure Multer for avatar uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/avatars'); // Ensure this directory exists
+    },
+    filename: function (req, file, cb) {
+      // Use the user ID and current timestamp for unique filenames
+      cb(null, req.user.id + '-' + Date.now() + path.extname(file.originalname));
+    },
+  });
+  
+  // File filter to accept only images
+  const fileFilter = (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+  
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed (jpeg, jpg, png, gif)'));
+    }
+  };
+  
+  const upload = multer({
+    storage: storage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB limit
+    fileFilter: fileFilter,
+  });
+  
+  /**
+   * @route   PUT /api/auth/user/profile
+   * @desc    Update user profile
+   * @access  Private
+   */
+  router.put('/user/profile', authenticateToken , upload.single('avatar'), async (req, res) => {
+    try {
+      const { name } = req.body;
+      let avatar;
+  
+      if (req.file) {
+        // If a new avatar is uploaded, set the avatar URL/path
+        avatar = `/uploads/avatars/${req.file.filename}`;
+      }
+  
+      // Find the user and update
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user.id,
+        {
+          name: name || req.user.name,
+          ...(avatar && { avatar }),
+        },
+        { new: true, select: '-password' }
+      );
+  
+      res.status(200).json({
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+        // Include other updated fields if necessary
+      });
+    } catch (error) {
+      console.error('Profile Update Error:', error.message);
+      res.status(500).json({ message: 'Server Error' });
+    }
+  });
+  
+  /**
+   * @route   PUT /api/auth/user/change-password
+   * @desc    Change user password
+   * @access  Private
+   */
+  router.put('/user/change-password', authenticateToken, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+  
+      // Validate input
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Please provide all required fields.' });
+      }
+  
+      // Find the user
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      // Compare current password
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Current password is incorrect.' });
+      }
+  
+      // Hash the new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+  
+      // Update the password
+      user.password = hashedPassword;
+      await user.save();
+  
+      res.status(200).json({ message: 'Password updated successfully.' });
+    } catch (error) {
+      console.error('Password Change Error:', error.message);
+      res.status(500).json({ message: 'Server Error' });
+    }
+  });
+  
 
 module.exports = router;

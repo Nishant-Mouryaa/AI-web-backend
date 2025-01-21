@@ -14,6 +14,9 @@ dotenv.config();
 
 console.log('OpenAI API Key:', process.env.OPENAI_API_KEY ? 'Loaded' : 'Missing');
 
+
+
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile'); // Import the profile route
@@ -22,6 +25,13 @@ const templatesRoutes = require('./routes/templates'); // Importing the template
 
 // Initialize Express app
 const app = express();
+
+
+
+const path = require('path');
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(helmet()); // Secure HTTP headers
