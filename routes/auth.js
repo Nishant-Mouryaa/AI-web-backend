@@ -265,4 +265,98 @@ const storage = multer.diskStorage({
   });
   
 
+
+  /**
+ * @route   GET /api/auth/user/settings/profile
+ * @desc    Get user profile settings
+ * @access  Private
+ */
+router.get('/user/settings/profile', authenticateJWT, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('websitePreferences');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.status(200).json(user.websitePreferences);
+  } catch (error) {
+    console.error('Get Profile Settings Error:', error.message);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+/**
+ * @route   PUT /api/auth/user/settings/profile
+ * @desc    Update user profile settings
+ * @access  Private
+ */
+router.put(
+  '/user/settings/profile',
+  authenticateJWT,
+  upload.single('avatar'), // If avatar upload is required alongside settings
+  [
+    body('theme')
+      .optional()
+      .isIn(['light', 'dark'])
+      .withMessage('Theme must be either light or dark.'),
+    body('notifications')
+      .optional()
+      .isBoolean()
+      .withMessage('Notifications must be a boolean value.'),
+    // Add other validations as needed
+  ],
+  async (req, res) => {
+    // Handle validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: 'Validation Error', errors: errors.array() });
+    }
+
+    try {
+      const { theme, notifications } = req.body;
+      let avatar;
+
+      if (req.file) {
+        // If a new avatar is uploaded, set the avatar URL/path
+        avatar = `/uploads/avatars/${req.file.filename}`;
+
+        // Optionally, delete the old avatar file if it's not the default avatar
+        const user = await User.findById(req.user.id);
+        if (user.avatar && user.avatar !== '/uploads/avatars/default-avatar.png') {
+          const oldAvatarPath = path.join(__dirname, '..', user.avatar);
+          fs.unlink(oldAvatarPath, (err) => {
+            if (err) {
+              console.error('Failed to delete old avatar:', err.message);
+            }
+          });
+        }
+      }
+
+      // Build the update object
+      const update = {};
+      if (theme !== undefined) update['websitePreferences.theme'] = theme;
+      if (notifications !== undefined) update['websitePreferences.notifications'] = notifications;
+      if (avatar) update['avatar'] = avatar;
+
+      // Update the user
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user.id,
+        { $set: update },
+        { new: true, runValidators: true, select: '-password' }
+      ).populate('websitePreferences');
+
+      res.status(200).json({
+        theme: updatedUser.websitePreferences.theme,
+        notifications: updatedUser.websitePreferences.notifications,
+        avatar: updatedUser.avatar,
+        // Include other updated fields if necessary
+      });
+    } catch (error) {
+      console.error('Update Profile Settings Error:', error.message);
+      res.status(500).json({ message: 'Server Error' });
+    }
+  }
+);
+
+
 module.exports = router;
