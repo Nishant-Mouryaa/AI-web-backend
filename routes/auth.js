@@ -271,7 +271,7 @@ const storage = multer.diskStorage({
  * @desc    Get user profile settings
  * @access  Private
  */
-router.get('/user/settings/profile', authenticateJWT, async (req, res) => {
+router.get('/user/settings/profile', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('websitePreferences');
     if (!user) {
@@ -292,7 +292,7 @@ router.get('/user/settings/profile', authenticateJWT, async (req, res) => {
  */
 router.put(
   '/user/settings/profile',
-  authenticateJWT,
+  authenticateToken,
   upload.single('avatar'), // If avatar upload is required alongside settings
   [
     body('theme')
