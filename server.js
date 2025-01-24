@@ -11,7 +11,6 @@ const morgan = require('morgan');
 
 // Load environment variables
 dotenv.config();
-
 console.log('OpenAI API Key:', process.env.OPENAI_API_KEY ? 'Loaded' : 'Missing');
 
 
